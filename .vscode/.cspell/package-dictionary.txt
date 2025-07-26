@@ -1,0 +1,2 @@
+# Dictionary for imported packages
+discordutils
