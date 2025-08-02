@@ -48,8 +48,14 @@ func (bm *BotManager) replyIfMentionBot(s *discordgo.Session, m *discordgo.Messa
 
 	fmt.Printf("[DEBUG] %s : String detected: '%s'\n", time.Now().Format("2006-01-02 15:04:05"), str)
 
+	// Split message into two part, time string and optional information
+	splited := strings.SplitN(str, " ", 2)
+
+	timeStr := splited[0]
+	optMsg := splited[1]
+
 	// Extract time values from message
-	hour, minutes, second, ok := timeparse.ExtractDuration(str)
+	hour, minutes, second, ok := timeparse.ExtractDuration(timeStr)
 
 	// Ignore if message is not in correct format
 	if !ok {
@@ -65,6 +71,11 @@ func (bm *BotManager) replyIfMentionBot(s *discordgo.Session, m *discordgo.Messa
 	// Schedule job by time
 	time.AfterFunc(d, func() {
 		response := author.Mention() + ", reminder send at " + t.Format("2006-01-02 15:04:05")
+
+		// Override response if optional message included
+		if optMsg != "" {
+			response = author.Mention() + ", reminder you that " + optMsg
+		}
 
 		msg, err := s.ChannelMessageSend(channelID, response)
 		if err != nil {
