@@ -95,11 +95,6 @@ func (bm *BotManager) handleMention(s *discordgo.Session, m *discordgo.MessageCr
 
 		// Delete original message
 		deleteMessageWithLog(s, m.ChannelID, m.ID)
-
-		// Add handler for delete message after 24hrs
-		time.AfterFunc(time.Duration(24)*time.Hour, func() {
-			deleteMessageWithLog(s, msg.ChannelID, msg.ID)
-		})
 	})
 	fmt.Printf("[DEBUG] %s : Delayed function set: %v\n", time.Now().Format("2006-01-02 15:04:05"), d)
 
