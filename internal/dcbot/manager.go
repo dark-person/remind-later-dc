@@ -2,6 +2,7 @@ package dcbot
 
 import (
 	"fmt"
+	"slices"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -68,17 +69,38 @@ func (bm *BotManager) Init(cfg *config.DiscordConfig) error {
 }
 
 // Clean all message that bot sent.
-func (bm *BotManager) Cleanup() {
-	// Loop all message ID for deletion
+func (bm *BotManager) Cleanup() error {
+	// Create map due to bulk delete message API require channel id
+	m := make(map[string][]string, 0)
+
+	// Loop send message
 	for _, msg := range bm.sentMsg {
-		deleteMessageWithLog(bm.session, msg.ChannelID, msg.ID)
+		m[msg.ChannelID] = append(m[msg.ChannelID], msg.ID)
+	}
+
+	// Loop map
+	for k, v := range m {
+		// Prepare iterator due to discord API bulk delete limit=100
+		iter := slices.Chunk(v, 100)
+
+		for batch := range iter {
+			err := bm.session.ChannelMessagesBulkDelete(k, batch)
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	fmt.Printf("[DEBUG] %s: All sent message cleanup.\n", time.Now().Format("2006-01-02 15:04:05"))
+	return nil
 }
 
 // Close session of the bot, with all message cleanup
 func (bm *BotManager) CloseWithCleanup() error {
-	bm.Cleanup()
+	err := bm.Cleanup()
+	if err != nil {
+		return err
+	}
+
 	return bm.session.Close()
 }

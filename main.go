@@ -34,5 +34,8 @@ func main() {
 	<-sc
 
 	// Clean up
-	bot.CloseWithCleanup()
+	err = bot.CloseWithCleanup()
+	if err != nil {
+		panic(err)
+	}
 }
