@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/dark-person/remind-later-dc/internal/config"
 	"github.com/dark-person/remind-later-dc/internal/dcbot"
@@ -25,6 +28,11 @@ func main() {
 		panic(err)
 	}
 
-	// Keep the main program running
-	select {}
+	// Wait for a termination signal
+	sc := make(chan os.Signal, 1)
+	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
+	<-sc
+
+	// Clean up
+	bot.CloseWithCleanup()
 }

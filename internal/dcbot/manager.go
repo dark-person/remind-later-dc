@@ -76,3 +76,9 @@ func (bm *BotManager) Cleanup() {
 
 	fmt.Printf("[DEBUG] %s: All sent message cleanup.\n", time.Now().Format("2006-01-02 15:04:05"))
 }
+
+// Close session of the bot, with all message cleanup
+func (bm *BotManager) CloseWithCleanup() error {
+	bm.Cleanup()
+	return bm.session.Close()
+}
