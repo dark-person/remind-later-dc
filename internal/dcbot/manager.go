@@ -7,8 +7,6 @@ import (
 	"github.com/dark-person/remind-later-dc/internal/config"
 )
 
-const timePattern = `^(\d+)h(\d+)m$`
-
 // Manager for control static functions reference of this discord package.
 //
 // Before using this manager, you should call Init function like this:
@@ -18,8 +16,6 @@ const timePattern = `^(\d+)h(\d+)m$`
 //
 // Otherwise, this bot manager will never work properly.
 type BotManager struct {
-	cfg *config.DiscordConfig // Original configuration
-
 	initialized bool               // Only true when this manager is initialized
 	session     *discordgo.Session // Discord session that designed for notification
 
@@ -29,7 +25,6 @@ type BotManager struct {
 // Create a new empty discord bot manager.
 func NewManager() *BotManager {
 	return &BotManager{
-		cfg:         nil,
 		initialized: false,
 		session:     nil,
 		Channel:     "",
@@ -44,7 +39,7 @@ func (bm *BotManager) Init(cfg *config.DiscordConfig) error {
 		return fmt.Errorf("discord token or channel ID not set")
 	}
 
-	bm.cfg = cfg // Store original configuration for future reference
+	// Set channel from config
 	bm.Channel = cfg.ListenedChannel
 
 	var err error
