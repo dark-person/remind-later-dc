@@ -2,6 +2,7 @@ package dcbot
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/dark-person/remind-later-dc/internal/config"
@@ -20,6 +21,8 @@ type BotManager struct {
 	session     *discordgo.Session // Discord session that designed for notification
 
 	Channel string // Channel ID to listen
+
+	sentMsg []*discordgo.Message // Sent discord message, for cleanup purpose
 }
 
 // Create a new empty discord bot manager.
@@ -28,6 +31,7 @@ func NewManager() *BotManager {
 		initialized: false,
 		session:     nil,
 		Channel:     "",
+		sentMsg:     make([]*discordgo.Message, 0),
 	}
 }
 
@@ -61,4 +65,14 @@ func (bm *BotManager) Init(cfg *config.DiscordConfig) error {
 
 	bm.initialized = true
 	return nil
+}
+
+// Clean all message that bot sent.
+func (bm *BotManager) Cleanup() {
+	// Loop all message ID for deletion
+	for _, msg := range bm.sentMsg {
+		deleteMessageWithLog(bm.session, msg.ChannelID, msg.ID)
+	}
+
+	fmt.Printf("[DEBUG] %s: All sent message cleanup.\n", time.Now().Format("2006-01-02 15:04:05"))
 }

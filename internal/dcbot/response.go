@@ -18,6 +18,17 @@ func deleteMessageWithLog(s *discordgo.Session, channelID string, messageID stri
 	fmt.Printf("[DEBUG] %s: Message %s deleted.\n", time.Now().Format("2006-01-02 15:04:05"), messageID)
 }
 
+// Send text message and added sent message to queue for cleanup purpose.
+func (bm *BotManager) sendTextMessage(channelID string, text string) {
+	msg, err := bm.session.ChannelMessageSend(channelID, text)
+	if err != nil {
+		fmt.Printf("[ERROR] %s : %s %v\n", time.Now().Format("2006-01-02 15:04:05"), "Failed to send message.", err)
+	}
+
+	// Set message to queue
+	bm.sentMsg = append(bm.sentMsg, msg)
+}
+
 // This function will be called (due to AddHandler above)
 // every time a new message is created on any channel
 // that the authenticated bot has access to.
@@ -32,6 +43,15 @@ func (bm *BotManager) messageCreate(s *discordgo.Session, m *discordgo.MessageCr
 		m.ChannelID, m.Author.Username, m.Content)
 
 	// ----------------------------------------
+
+	// Handle cleanup
+	if m.Content == "!clean" || m.Content == "!clear" {
+		// Delete user message
+		deleteMessageWithLog(s, m.ChannelID, m.ID)
+
+		// Clean outdated message
+		bm.Cleanup()
+	}
 
 	// Handle message with time string and mention
 	if strings.HasPrefix(m.Content, s.State.User.Mention()) {
@@ -88,10 +108,8 @@ func (bm *BotManager) handleMention(s *discordgo.Session, m *discordgo.MessageCr
 			response = author.Mention() + ", reminder you that " + optMsg
 		}
 
-		msg, err := s.ChannelMessageSend(channelID, response)
-		if err != nil {
-			fmt.Printf("[ERROR] %s : %s %v\n", time.Now().Format("2006-01-02 15:04:05"), "Failed to send message.", err)
-		}
+		// Send message
+		bm.sendTextMessage(channelID, response)
 
 		// Delete original message
 		deleteMessageWithLog(s, m.ChannelID, m.ID)
