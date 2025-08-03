@@ -56,8 +56,14 @@ func (bm *BotManager) handleMention(s *discordgo.Session, m *discordgo.MessageCr
 	// Split message into two part, time string and optional information
 	splited := strings.SplitN(message, " ", 2)
 
-	timeStr := splited[0]
-	optMsg := splited[1]
+	var timeStr, optMsg string
+	if len(splited) == 2 {
+		timeStr = splited[0]
+		optMsg = splited[1]
+	} else {
+		timeStr = splited[0]
+		optMsg = ""
+	}
 
 	// Extract time values from message
 	hour, minutes, second, ok := timeparse.ExtractDuration(timeStr)
