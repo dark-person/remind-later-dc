@@ -1,13 +1,14 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/dark-person/remind-later-dc/internal/config"
 	"github.com/dark-person/remind-later-dc/internal/dcbot"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 var cfg *config.DiscordConfig
@@ -20,8 +21,11 @@ func main() {
 		panic(err) // Program will never run properly when config not loaded
 	}
 
-	fmt.Println("Config loaded. Token: ", cfg.Token, "Channels: ", cfg.ListenedChannel)
+	// Setup logger
+	setupLogger(zerolog.TraceLevel)
+	log.Info().Str("token", cfg.Token).Str("channels", cfg.ListenedChannel).Msg("Config loaded.")
 
+	// Setup bot
 	bot := dcbot.NewManager()
 	err = bot.Init(cfg)
 	if err != nil {

@@ -3,10 +3,10 @@ package dcbot
 import (
 	"fmt"
 	"slices"
-	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/dark-person/remind-later-dc/internal/config"
+	"github.com/rs/zerolog/log"
 )
 
 // Manager for control static functions reference of this discord package.
@@ -91,7 +91,7 @@ func (bm *BotManager) Cleanup() error {
 		}
 	}
 
-	fmt.Printf("[DEBUG] %s: All sent message cleanup.\n", time.Now().Format("2006-01-02 15:04:05"))
+	log.Debug().Msg("All sent message cleanup.")
 	return nil
 }
 

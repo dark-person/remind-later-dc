@@ -1,28 +1,28 @@
 package dcbot
 
 import (
-	"fmt"
 	"strings"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/dark-person/remind-later-dc/internal/timeparse"
+	"github.com/rs/zerolog/log"
 )
 
 // Delete given discord message with logging and error handle.
 func deleteMessageWithLog(s *discordgo.Session, channelID string, messageID string) {
 	err := s.ChannelMessageDelete(channelID, messageID)
 	if err != nil {
-		fmt.Printf("[ERROR] Error delete message: %v", err)
+		log.Error().Err(err).Msg("Error when delete message")
 	}
-	fmt.Printf("[DEBUG] %s: Message %s deleted.\n", time.Now().Format("2006-01-02 15:04:05"), messageID)
+	log.Debug().Str("messageID", messageID).Msg("Message deleted.")
 }
 
 // Send text message and added sent message to queue for cleanup purpose.
 func (bm *BotManager) sendTextMessage(channelID string, text string) {
 	msg, err := bm.session.ChannelMessageSend(channelID, text)
 	if err != nil {
-		fmt.Printf("[ERROR] %s : %s %v\n", time.Now().Format("2006-01-02 15:04:05"), "Failed to send message.", err)
+		log.Error().Err(err).Msg("Failed to send message.")
 	}
 
 	// Set message to queue
@@ -38,9 +38,7 @@ func (bm *BotManager) messageCreate(s *discordgo.Session, m *discordgo.MessageCr
 		return
 	}
 
-	fmt.Printf("%s [%s] %s: %s\n",
-		time.Now().Format("2006-01-02 15:04:05"),
-		m.ChannelID, m.Author.Username, m.Content)
+	log.Trace().Msgf("[%s] %s: %s", m.ChannelID, m.Author.Username, m.Content)
 
 	// ----------------------------------------
 
@@ -71,7 +69,7 @@ func (bm *BotManager) handleMention(s *discordgo.Session, m *discordgo.MessageCr
 	message := strings.ReplaceAll(m.Content, s.State.User.Mention(), "")
 	message = strings.TrimSpace(message)
 
-	fmt.Printf("[DEBUG] %s : String detected: '%s'\n", time.Now().Format("2006-01-02 15:04:05"), message)
+	log.Debug().Msgf("String detected: %s", message)
 
 	// Split message into two part, time string and optional information
 	splited := strings.SplitN(message, " ", 2)
@@ -114,12 +112,12 @@ func (bm *BotManager) handleMention(s *discordgo.Session, m *discordgo.MessageCr
 		// Delete original message
 		deleteMessageWithLog(s, m.ChannelID, m.ID)
 	})
-	fmt.Printf("[DEBUG] %s : Delayed function set: %v\n", time.Now().Format("2006-01-02 15:04:05"), d)
+	log.Debug().Dur("duration", d).Msg("Delayed function set.")
 
 	// Set emoji
 	err := s.MessageReactionAdd(m.ChannelID, m.ID, "✅") // 🔜
 	if err != nil {
-		fmt.Printf("[ERROR] Error adding reaction: %v", err)
+		log.Error().Err(err).Msg("Error when adding reaction")
 	}
-	fmt.Printf("[DEBUG] %s :Reaction added.\n", time.Now().Format("2006-01-02 15:04:05"))
+	log.Debug().Msg("Reaction added.")
 }
