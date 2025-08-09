@@ -1,3 +1,4 @@
+// Package config is to load config.yaml to golang struct for discord bot usage.
 package config
 
 import (

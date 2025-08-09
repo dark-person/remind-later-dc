@@ -1,3 +1,4 @@
+// Package dcbot is responsible to manage discord bot behavior.
 package dcbot
 
 import (
