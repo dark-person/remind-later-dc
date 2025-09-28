@@ -10,12 +10,12 @@ import (
 )
 
 // Delete given discord message with logging and error handle.
-func deleteMessageWithLog(s *discordgo.Session, channelID string, messageID string) {
+func deleteMessageWithLog(s *discordgo.Session, channelID string, messageID string, messageRemark string) {
 	err := s.ChannelMessageDelete(channelID, messageID)
 	if err != nil {
 		log.Error().Err(err).Msg("Error when delete message")
 	}
-	log.Debug().Str("messageID", messageID).Msg("Message deleted.")
+	log.Debug().Str("messageID", messageID).Msg("Message (" + messageRemark + ") deleted.")
 }
 
 // Send text message and added sent message to queue for cleanup purpose.
@@ -45,7 +45,7 @@ func (bm *BotManager) messageCreate(s *discordgo.Session, m *discordgo.MessageCr
 	// Handle cleanup
 	if m.Content == "!clean" || m.Content == "!clear" {
 		// Delete user message
-		deleteMessageWithLog(s, m.ChannelID, m.ID)
+		deleteMessageWithLog(s, m.ChannelID, m.ID, "clean command")
 
 		// Clean outdated message
 		bm.Cleanup()
@@ -110,7 +110,7 @@ func (bm *BotManager) handleMention(s *discordgo.Session, m *discordgo.MessageCr
 		bm.sendTextMessage(channelID, response)
 
 		// Delete original message
-		deleteMessageWithLog(s, m.ChannelID, m.ID)
+		deleteMessageWithLog(s, m.ChannelID, m.ID, "Scheduled")
 	})
 	log.Debug().Dur("duration", d).Msg("Delayed function set.")
 
