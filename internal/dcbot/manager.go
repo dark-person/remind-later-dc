@@ -92,6 +92,9 @@ func (bm *BotManager) Cleanup() error {
 		}
 	}
 
+	// Empty message queue
+	bm.sentMsg = []*discordgo.Message{}
+
 	log.Debug().Msg("All sent message cleanup.")
 	return nil
 }
