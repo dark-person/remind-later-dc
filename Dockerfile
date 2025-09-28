@@ -1,4 +1,4 @@
-FROM golang:1.24.5 AS builder
+FROM golang:1.24 AS builder
 
 # Set destination for COPY
 ARG CGO_ENABLED=0
